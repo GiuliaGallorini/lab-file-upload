@@ -1,29 +1,38 @@
 const express = require("express");
-const passport = require('passport');
-const router = express.Router();
+const multer = require("multer"); // NEW
+const passport = require("passport");
 const User = require("../models/User");
+const Post = require("../models/Post");
+const Comment = require("../models/Comment");
+
+const router = express.Router();
+const upload = multer({ dest: "./public/uploads/" }); // NEW
 
 // Bcrypt to encrypt passwords
 const bcrypt = require("bcrypt");
 const bcryptSalt = 10;
 
-
 router.get("/login", (req, res, next) => {
-  res.render("auth/login", { "message": req.flash("error") });
+  res.render("auth/login", { message: req.flash("error") });
 });
 
-router.post("/login", passport.authenticate("local", {
-  successRedirect: "/",
-  failureRedirect: "/auth/login",
-  failureFlash: true,
-  passReqToCallback: true
-}));
+router.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/",
+    failureRedirect: "/auth/login",
+    failureFlash: true,
+    passReqToCallback: true
+  })
+);
 
 router.get("/signup", (req, res, next) => {
   res.render("auth/signup");
 });
 
-router.post("/signup", (req, res, next) => {
+router.post("/signup", upload.single("photo"), (req, res, next) => {
+  console.log("req.file", req.file);
+
   const username = req.body.username;
   const password = req.body.password;
   if (username === "" || password === "") {
@@ -42,16 +51,19 @@ router.post("/signup", (req, res, next) => {
 
     const newUser = new User({
       username,
-      password: hashPass
+      password: hashPass,
+      picPath: "/uploads/" + req.file.filename
     });
 
-    newUser.save()
-    .then(() => {
-      res.redirect("/");
-    })
-    .catch(err => {
-      res.render("auth/signup", { message: "Something went wrong" });
-    })
+    newUser
+      .save()
+      .then(() => {
+        res.redirect("/");
+      })
+      .catch(err => {
+        console.log("TCL: err", err);
+        res.render("auth/signup", { message: "Something went wrong" });
+      });
   });
 });
 

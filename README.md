@@ -2,11 +2,14 @@
 
 ## Step 0
 
-Write the models
+Write the models => OK
 
 ## Step 1
 
 Do the signup where users have to upload a profile picture. If they do not provide any picture, you should display an error.
+
+$ npm install multer  => OK
+folder public/uploads => OK
 
 ## Step 2
 
